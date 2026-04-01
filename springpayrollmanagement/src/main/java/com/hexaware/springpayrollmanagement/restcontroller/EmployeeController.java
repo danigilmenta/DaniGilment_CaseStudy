@@ -9,9 +9,10 @@ import com.hexaware.springpayrollmanagement.dto.EmployeeDTO;
 import com.hexaware.springpayrollmanagement.service.IEmployeeService;
 
 import jakarta.validation.Valid;
-@CrossOrigin(origins = "http://localhost:3000")
+
 @RestController
 @RequestMapping("/api/employees")
+@CrossOrigin(origins = "http://localhost:3000")
 public class EmployeeController {
 
     @Autowired
@@ -33,8 +34,8 @@ public class EmployeeController {
     }
 
     @GetMapping("/by-email/{emailId}")
-    public EmployeeDTO getEmployeeByEmailId(@PathVariable String emailId) {
-        return service.getEmployeeByEmailId(emailId);
+    public EmployeeDTO getEmployeeByEmail(@PathVariable String emailId) {
+        return service.getEmployeeByEmail(emailId);
     }
 
     @GetMapping("/all")
@@ -43,10 +44,11 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public String deleteEmployee(@PathVariable int id){
+    public org.springframework.http.ResponseEntity<java.util.Map<String, String>> deleteEmployee(@PathVariable int id){
 
         service.deleteEmployee(id);
-
-        return "Employee Deleted Successfully";
+        java.util.Map<String, String> response = new java.util.HashMap<>();
+        response.put("message", "Employee Deleted Successfully");
+        return org.springframework.http.ResponseEntity.ok(response);
     }
 }

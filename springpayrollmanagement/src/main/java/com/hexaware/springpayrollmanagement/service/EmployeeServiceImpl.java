@@ -17,6 +17,16 @@ public class EmployeeServiceImpl implements IEmployeeService {
     @Autowired
     private EmployeeRepo repo;
 
+    @Autowired
+    private com.hexaware.springpayrollmanagement.service.AuditLogService auditLogService;
+
+    private String getCurrentUsername() {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            return auth.getName();
+        }
+        return "System";
+    }
 
     public static EmployeeDTO mapEntity2Dto(Employee emp){
 
@@ -27,11 +37,12 @@ public class EmployeeServiceImpl implements IEmployeeService {
         dto.setEmpId(emp.getEmpId());
         dto.setName(emp.getName());
         dto.setBasicSalary(emp.getBasicSalary());
-        dto.setContactNumber(emp.getContactNumber());
-        dto.setEmailId(emp.getEmailId());
 
         if(emp.getDepartmentName()!=null)
             dto.setDepartmentName(emp.getDepartmentName());
+
+        dto.setContactNumber(emp.getContactNumber());
+        dto.setEmailId(emp.getEmailId());
 
         return dto;
     }
@@ -44,13 +55,13 @@ public class EmployeeServiceImpl implements IEmployeeService {
       
         emp.setName(dto.getName());
         emp.setBasicSalary(dto.getBasicSalary());
+
+        emp.setDepartmentName(dto.getDepartmentName());
         emp.setContactNumber(dto.getContactNumber());
         emp.setEmailId(dto.getEmailId());
 
-        emp.setDepartmentName(dto.getDepartmentName());
-
         Employee saved = repo.save(emp);
-
+        auditLogService.logAction(getCurrentUsername(), "ADD_EMPLOYEE", "Added new employee: " + saved.getName());
         return mapEntity2Dto(saved);
     }
 
@@ -61,12 +72,14 @@ public class EmployeeServiceImpl implements IEmployeeService {
         
         emp.setName(dto.getName());
         emp.setBasicSalary(dto.getBasicSalary());
+
+        emp.setDepartmentName(dto.getDepartmentName());
         emp.setContactNumber(dto.getContactNumber());
         emp.setEmailId(dto.getEmailId());
 
-        emp.setDepartmentName(dto.getDepartmentName());
-
-        return mapEntity2Dto(repo.save(emp));
+        Employee saved = repo.save(emp);
+        auditLogService.logAction(getCurrentUsername(), "UPDATE_EMPLOYEE", "Updated details for employee: " + saved.getName());
+        return mapEntity2Dto(saved);
     }
 
     @Override
@@ -78,7 +91,7 @@ public class EmployeeServiceImpl implements IEmployeeService {
     }
 
     @Override
-    public EmployeeDTO getEmployeeByEmailId(String emailId) {
+    public EmployeeDTO getEmployeeByEmail(String emailId) {
         Employee emp = repo.findByEmailId(emailId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with email: " + emailId));
         return mapEntity2Dto(emp);
@@ -101,5 +114,6 @@ public class EmployeeServiceImpl implements IEmployeeService {
     public void deleteEmployee(int empId){
 
         repo.deleteById(empId);
+        auditLogService.logAction(getCurrentUsername(), "DELETE_EMPLOYEE", "Deleted employee ID: " + empId);
     }
 }

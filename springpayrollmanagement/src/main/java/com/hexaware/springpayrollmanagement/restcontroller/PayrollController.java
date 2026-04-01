@@ -7,18 +7,13 @@ import org.springframework.web.bind.annotation.*;
 
 import com.hexaware.springpayrollmanagement.dto.PayrollDTO;
 import com.hexaware.springpayrollmanagement.service.IPayrollService;
-import com.hexaware.springpayrollmanagement.service.AuditLogService;
-import org.springframework.security.core.context.SecurityContextHolder;
-
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/payroll")
 public class PayrollController {
 
     @Autowired
     private IPayrollService service;
-
-    @Autowired
-    private AuditLogService auditLogService;
 
     @PostMapping("/generate")
     public PayrollDTO generatePayroll(
@@ -27,10 +22,7 @@ public class PayrollController {
             @RequestParam int month,
             @RequestParam int year){
 
-        PayrollDTO dto = service.generatePayroll(empId, policyId, month, year);
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        auditLogService.logAction(username, "Generated Payroll", "Generated payroll for employee ID " + empId + " for month " + month + " year " + year);
-        return dto;
+        return service.generatePayroll(empId, policyId, month, year);
     }
 
     @GetMapping("/{id}")
@@ -39,11 +31,8 @@ public class PayrollController {
     }
 
     @PutMapping("/verify/{id}")
-    public PayrollDTO verifyPayroll(@PathVariable int id){
-        PayrollDTO dto = service.verifyPayroll(id);
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        auditLogService.logAction(username, "Verified Payroll", "Verified payroll ID " + id);
-        return dto;
+    public PayrollDTO verifyPayroll(@PathVariable int id) {
+        return service.verifyPayroll(id);
     }
 
     @GetMapping("/employee/{empId}")

@@ -1,33 +1,31 @@
 package com.hexaware.springpayrollmanagement.entity;
 
-
-
 import jakarta.persistence.*;
 
 @Entity
-@Table(name="payroll")
+@Table(name = "payroll")
 public class Payroll {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int payrollId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int payrollId;
 
-    @ManyToOne
-    @JoinColumn(name="emp_id")
-    private Employee employee;
+	@ManyToOne
+	@JoinColumn(name = "emp_id")
+	private Employee employee;
 
-    private int month;
-    private int year;
+	private int month;
+	private int year;
 
-    private double basicSalary;
-    private double hra;
-    private double tax;
-    private double pf;
-    private double netSalary;
+	private double basicSalary;
+	private double hra;
+	private double tax;
+	private double pf;
+	private double netSalary;
+	private String status;
 
-    private String status; // 'PENDING' or 'VERIFIED'
-
-    public Payroll(){}
+	public Payroll() {
+	}
 
 	public int getPayrollId() {
 		return payrollId;
@@ -124,5 +122,4 @@ public class Payroll {
 		this.status = status;
 	}
 
-   
 }

@@ -21,6 +21,17 @@ public class LeaveRequestServiceImpl implements ILeaveRequestService {
     @Autowired
     private EmployeeRepo employeeRepo;
 
+    @Autowired
+    private com.hexaware.springpayrollmanagement.service.AuditLogService auditLogService;
+
+    private String getCurrentUsername() {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            return auth.getName();
+        }
+        return "System";
+    }
+
     public static LeaveRequestDTO mapEntity2Dto(LeaveRequest leave){
 
         if(leave == null) return null;
@@ -55,7 +66,9 @@ public class LeaveRequestServiceImpl implements ILeaveRequestService {
 
         leave.setEmployee(emp);
 
-        return mapEntity2Dto(repo.save(leave));
+        LeaveRequest saved = repo.save(leave);
+        auditLogService.logAction(getCurrentUsername(), "APPLY_LEAVE", "Leave applied for Employee ID: " + dto.getEmpId());
+        return mapEntity2Dto(saved);
     }
 
     @Override
@@ -65,7 +78,9 @@ public class LeaveRequestServiceImpl implements ILeaveRequestService {
 
         leave.setStatus("APPROVED");
 
-        return mapEntity2Dto(repo.save(leave));
+        LeaveRequest saved = repo.save(leave);
+        auditLogService.logAction(getCurrentUsername(), "APPROVE_LEAVE", "Approved leave ID: " + leaveId);
+        return mapEntity2Dto(saved);
     }
 
     @Override
@@ -75,7 +90,9 @@ public class LeaveRequestServiceImpl implements ILeaveRequestService {
 
         leave.setStatus("REJECTED");
 
-        return mapEntity2Dto(repo.save(leave));
+        LeaveRequest saved = repo.save(leave);
+        auditLogService.logAction(getCurrentUsername(), "REJECT_LEAVE", "Rejected leave ID: " + leaveId);
+        return mapEntity2Dto(saved);
     }
 
     @Override

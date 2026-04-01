@@ -26,6 +26,17 @@ public class PayrollServiceImpl implements IPayrollService {
     @Autowired
     private PayrollPolicyRepo policyRepo;
 
+    @Autowired
+    private com.hexaware.springpayrollmanagement.service.AuditLogService auditLogService;
+
+    private String getCurrentUsername() {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            return auth.getName();
+        }
+        return "System";
+    }
+
     public static PayrollDTO mapEntity2Dto(Payroll payroll){
 
         if(payroll == null) return null;
@@ -51,9 +62,11 @@ public class PayrollServiceImpl implements IPayrollService {
     @Override
     public PayrollDTO generatePayroll(int empId,int policyId,int month,int year){
 
-        Employee emp = employeeRepo.findById(empId).orElse(null);
+        Employee emp = employeeRepo.findById(empId)
+                .orElseThrow(() -> new com.hexaware.springpayrollmanagement.exception.ResourceNotFoundException("Employee not found with id " + empId));
 
-        PayrollPolicy policy = policyRepo.findById(policyId).orElse(null);
+        PayrollPolicy policy = policyRepo.findById(policyId)
+                .orElseThrow(() -> new com.hexaware.springpayrollmanagement.exception.ResourceNotFoundException("Payroll Policy not found with id " + policyId));
 
         double basic = emp.getBasicSalary();
 
@@ -75,23 +88,24 @@ public class PayrollServiceImpl implements IPayrollService {
         payroll.setNetSalary(netSalary);
         payroll.setStatus("PENDING");
 
-        return mapEntity2Dto(payrollRepo.save(payroll));
-    }
-
-    @Override
-    public PayrollDTO verifyPayroll(int payrollId){
-        Payroll payroll = payrollRepo.findById(payrollId).orElse(null);
-        if(payroll != null) {
-            payroll.setStatus("VERIFIED");
-            payrollRepo.save(payroll);
-        }
-        return mapEntity2Dto(payroll);
+        Payroll saved = payrollRepo.save(payroll);
+        auditLogService.logAction(getCurrentUsername(), "GENERATE_PAYROLL", "Generated payroll for employee ID: " + empId + " for month: " + month);
+        return mapEntity2Dto(saved);
     }
 
     @Override
     public PayrollDTO getPayrollById(int payrollId){
-
         return mapEntity2Dto(payrollRepo.findById(payrollId).orElse(null));
+    }
+
+    @Override
+    public PayrollDTO verifyPayroll(int payrollId) {
+        Payroll payroll = payrollRepo.findById(payrollId)
+                .orElseThrow(() -> new com.hexaware.springpayrollmanagement.exception.ResourceNotFoundException("Payroll not found with id " + payrollId));
+        payroll.setStatus("VERIFIED");
+        Payroll saved = payrollRepo.save(payroll);
+        auditLogService.logAction(getCurrentUsername(), "VERIFY_PAYROLL", "Verified payroll ID: " + payrollId);
+        return mapEntity2Dto(saved);
     }
 
     @Override
@@ -111,5 +125,6 @@ public class PayrollServiceImpl implements IPayrollService {
     public void deletePayroll(int payrollId){
 
         payrollRepo.deleteById(payrollId);
+        auditLogService.logAction(getCurrentUsername(), "DELETE_PAYROLL", "Deleted payroll ID: " + payrollId);
     }
 }

@@ -1,6 +1,7 @@
 package com.hexaware.springpayrollmanagement.repo;
 
 import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -10,10 +11,10 @@ public interface LeaveRequestRepo extends JpaRepository<LeaveRequest,Integer>{
 
     List<LeaveRequest> findByStatus(String status);
 
-    @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.employee.empId = :empId AND l.status = 'PENDING'")
+    @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.employee.empId = ?1 AND l.status = 'PENDING'")
     Long countPendingLeavesByEmployee(int empId);
 
-    @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.employee.empId = :empId AND l.status = 'APPROVED'")
+    @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.employee.empId = ?1 AND l.status = 'APPROVED'")
     Long countApprovedLeavesByEmployee(int empId);
 
     @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.status = 'PENDING'")

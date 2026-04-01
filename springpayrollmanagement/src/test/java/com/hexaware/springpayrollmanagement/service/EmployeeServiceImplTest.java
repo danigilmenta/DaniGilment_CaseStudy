@@ -33,6 +33,8 @@ class EmployeeServiceImplTest {
         e.setName("Jeelani");
         e.setBasicSalary(30000.0);
         e.setDepartmentName("Engineering");
+        e.setContactNumber("1234567890");
+        e.setEmailId("test@hexaware.com");
 
         EmployeeDTO e1 = service.addEmployee(e);
 

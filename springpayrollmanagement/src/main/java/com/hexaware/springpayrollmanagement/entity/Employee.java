@@ -16,6 +16,7 @@ public class Employee {
 
     private Double basicSalary;
 
+    @Column(name="department_name")
     private String departmentName;
 
     @Column(name="contact_number")
